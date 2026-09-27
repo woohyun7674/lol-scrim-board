@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LoL 내전 매니저 - 무한섬 스타일 대시보드</title>
+  <title>LoL 내전 전적 리더보드</title>
   <style>
     :root {
       --bg-dark: #111215;
@@ -22,7 +22,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg-dark); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-    /* 사이드바 */
     aside {
       width: 250px;
       background-color: var(--bg-sidebar);
@@ -34,7 +33,7 @@
     }
     .logo-area {
       padding: 24px 20px;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: bold;
       color: var(--point-color);
       display: flex;
@@ -46,23 +45,16 @@
     .nav-links li {
       padding: 14px 24px;
       cursor: pointer;
-      color: var(--text-sub);
+      color: var(--point-color);
+      background-color: rgba(229, 169, 60, 0.08);
+      border-left: 4px solid var(--point-color);
       font-size: 0.95rem;
       display: flex;
       align-items: center;
       gap: 12px;
-      transition: all 0.2s;
     }
-    .nav-links li:hover, .nav-links li.active {
-      color: var(--point-color);
-      background-color: rgba(229, 169, 60, 0.08);
-      border-left: 4px solid var(--point-color);
-    }
-    .sidebar-footer {
-      padding: 20px;
-      border-top: 1px solid var(--border-color);
-    }
-    .btn-admin {
+    .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-color); }
+    .btn-sheet {
       width: 100%;
       padding: 10px;
       border: 1px solid var(--border-color);
@@ -71,24 +63,14 @@
       border-radius: 6px;
       cursor: pointer;
       font-size: 0.85rem;
+      text-decoration: none;
+      display: block;
+      text-align: center;
       transition: all 0.2s;
     }
-    .btn-admin:hover { background: var(--bg-hover); border-color: var(--point-color); }
-    .admin-badge {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 0.75rem;
-      color: var(--win-color);
-      text-align: center;
-      width: 100%;
-    }
+    .btn-sheet:hover { background: var(--bg-hover); border-color: var(--point-color); }
 
-    /* 메인 콘텐츠 */
-    main {
-      flex: 1;
-      padding: 30px 40px;
-      overflow-y: auto;
-    }
+    main { flex: 1; padding: 30px 40px; overflow-y: auto; }
     .section-header {
       display: flex;
       justify-content: space-between;
@@ -98,18 +80,29 @@
       padding-bottom: 15px;
     }
     .section-title { font-size: 1.5rem; font-weight: 700; color: var(--text-main); }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
     .search-box input {
       background: var(--bg-card);
       border: 1px solid var(--border-color);
       padding: 10px 16px;
       border-radius: 6px;
       color: var(--text-main);
-      width: 250px;
+      width: 220px;
       outline: none;
     }
     .search-box input:focus { border-color: var(--point-color); }
 
-    /* 리더보드 테이블 */
+    .btn-refresh {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      padding: 9px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn-refresh:hover { border-color: var(--point-color); }
+
     .table-container {
       background: var(--bg-card);
       border-radius: 8px;
@@ -118,23 +111,11 @@
     }
     table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
     th, td { padding: 14px 20px; border-bottom: 1px solid var(--border-color); }
-    th {
-      background: #191a20;
-      color: var(--text-sub);
-      font-weight: 600;
-      cursor: pointer;
-      user-select: none;
-    }
+    th { background: #191a20; color: var(--text-sub); font-weight: 600; cursor: pointer; user-select: none; }
     th:hover { color: var(--text-main); }
     tr:hover td { background-color: var(--bg-hover); }
 
-    /* 뱃지 및 상태 스타일 */
-    .tier-badge {
-      font-weight: bold;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
-    }
+    .tier-badge { font-weight: bold; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; }
     .tier-SS { color: #f59e0b; background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; }
     .tier-S { color: #ec4899; background: rgba(236, 72, 153, 0.15); }
     .tier-A { color: #8b5cf6; background: rgba(139, 92, 246, 0.15); }
@@ -146,233 +127,119 @@
     .winrate-mid { color: var(--point-color); }
     .winrate-low { color: var(--loss-color); }
 
-    /* 탭 화면 전환 */
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
-
-    /* 폼 스타일 */
-    .form-card {
-      background: var(--bg-card);
-      padding: 24px;
-      border-radius: 8px;
-      border: 1px solid var(--border-color);
-      max-width: 600px;
-      margin-bottom: 25px;
-    }
-    .form-group { margin-bottom: 18px; }
-    .form-group label { display: block; margin-bottom: 8px; font-size: 0.85rem; color: var(--text-sub); }
-    .form-group input, .form-group select, .form-group textarea {
-      width: 100%;
-      background: var(--bg-dark);
-      border: 1px solid var(--border-color);
-      color: var(--text-main);
-      padding: 10px;
-      border-radius: 6px;
-      outline: none;
-    }
-    .form-group input:focus, .form-group select:focus { border-color: var(--point-color); }
-    .btn-primary {
-      background: var(--point-color);
-      color: #000;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .btn-primary:hover { background: var(--point-hover); }
-
-    /* 경기 기록 멀티 셀렉트 */
-    .team-select-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-    .team-box { background: var(--bg-dark); border: 1px solid var(--border-color); padding: 15px; border-radius: 6px; }
-    .team-box h4 { margin-bottom: 10px; font-size: 0.95rem; }
-    .player-checkboxes { max-height: 200px; overflow-y: auto; }
-    .player-checkboxes label { display: block; margin: 6px 0; font-size: 0.85rem; cursor: pointer; }
+    .status-msg { padding: 40px; text-align: center; color: var(--text-sub); font-size: 1rem; }
   </style>
 </head>
 <body>
 
-  <!-- 좌측 사이드바 -->
   <aside>
     <div>
       <div class="logo-area">
         <span>⚔️</span> LoL 내전 매니저
       </div>
       <ul class="nav-links">
-        <li class="active" onclick="switchTab('leaderboard', this)">🏆 개인 기록 (Leaderboard)</li>
-        <li onclick="switchTab('match', this)">⚔️ 경기 결과 입력</li>
-        <li onclick="switchTab('admin', this)">⚙️ 관리자 모드</li>
+        <li>🏆 개인 기록 (Leaderboard)</li>
       </ul>
     </div>
     <div class="sidebar-footer">
-      <button class="btn-admin" id="adminBtn" onclick="toggleAdminModal()">관리자 로그인</button>
-      <span class="admin-badge" id="adminBadge" style="display: none;">● 관리자 인증됨</span>
+      <!-- 구글 시트 편집 링크를 걸어둘 수 있습니다 -->
+      <a href="#" id="sheetEditLink" target="_blank" class="btn-sheet">📊 구글 시트에서 수정하기</a>
     </div>
   </aside>
 
-  <!-- 메인 콘텐츠 영역 -->
   <main>
-    <!-- 탭 1: 리더보드 -->
-    <div id="tab-leaderboard" class="tab-content active">
-      <div class="section-header">
-        <div class="section-title">개인 기록 (Leaderboard)</div>
+    <div class="section-header">
+      <div class="section-title">개인 기록 (Leaderboard)</div>
+      <div class="header-actions">
+        <button class="btn-refresh" onclick="fetchSheetData()">🔄 새로고침</button>
         <div class="search-box">
           <input type="text" id="searchInput" placeholder="선수 검색..." onkeyup="renderLeaderboard()" />
         </div>
       </div>
-      <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th onclick="sortTable('name')">선수</th>
-              <th onclick="sortTable('tier')">내부 티어 ⬍</th>
-              <th onclick="sortTable('position')">주 포지션</th>
-              <th onclick="sortTable('games')">총 게임 ⬍</th>
-              <th onclick="sortTable('wins')">승리 ⬍</th>
-              <th onclick="sortTable('winRate')">승률 ⬍</th>
-              <th>체감 특징 및 코멘트</th>
-              <th class="admin-only" style="display:none;">관리</th>
-            </tr>
-          </thead>
-          <tbody id="leaderboardBody"></tbody>
-        </table>
-      </div>
     </div>
 
-    <!-- 탭 2: 경기 결과 입력 -->
-    <div id="tab-match" class="tab-content">
-      <div class="section-header">
-        <div class="section-title">경기 결과 입력 (자동 정산)</div>
-      </div>
-      <div class="form-card" style="max-width: 800px;">
-        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 15px;">
-          승리 팀과 패배 팀 선수를 선택하고 저장하면 총 게임, 승리 수, 승률이 자동 갱신됩니다.
-        </p>
-        <div class="team-select-grid">
-          <div class="team-box" style="border-left: 4px solid var(--win-color);">
-            <h4 style="color:var(--win-color);">🏆 승리 팀 선수 선택 (최대 5명)</h4>
-            <div id="winnerCheckboxes" class="player-checkboxes"></div>
-          </div>
-          <div class="team-box" style="border-left: 4px solid var(--loss-color);">
-            <h4 style="color:var(--loss-color);">💀 패배 팀 선수 선택 (최대 5명)</h4>
-            <div id="loserCheckboxes" class="player-checkboxes"></div>
-          </div>
-        </div>
-        <button class="btn-primary" onclick="submitMatchResult()">경기 결과 반영하기</button>
-      </div>
-    </div>
-
-    <!-- 탭 3: 관리자 모드 -->
-    <div id="tab-admin" class="tab-content">
-      <div class="section-header">
-        <div class="section-title">선수 관리 및 데이터 백업</div>
-      </div>
-      
-      <!-- 신규 선수 등록 -->
-      <div class="form-card">
-        <h3 style="margin-bottom: 15px;">➕ 신규 선수 등록 / 정보 수정</h3>
-        <div class="form-group">
-          <label>소환사명 (선수명)</label>
-          <input type="text" id="pName" placeholder="예: Hide on bush" />
-        </div>
-        <div class="form-group">
-          <label>내부 체급 티어</label>
-          <select id="pTier">
-            <option value="SS">SS (압도적 1황)</option>
-            <option value="S">S (안정적 캐리 / 다이아급)</option>
-            <option value="A">A (에메랄드급 체급)</option>
-            <option value="B" selected>B (플래티넘 기본 체급)</option>
-            <option value="C">C (실~골드 / 기복형)</option>
-            <option value="D">D (오프롤 / 초보)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>주 포지션</label>
-          <select id="pPos">
-            <option value="TOP">탑 (TOP)</option>
-            <option value="JGL">정글 (JGL)</option>
-            <option value="MID">미드 (MID)</option>
-            <option value="BOT">바텀 (BOT)</option>
-            <option value="SUP">서폿 (SUP)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>체감 특징 / 인게임 메모</label>
-          <input type="text" id="pNotes" placeholder="예: 오더 능숙, 라인전 강함, 멘탈 약함 등" />
-        </div>
-        <button class="btn-primary" onclick="savePlayer()">선수 저장하기</button>
-      </div>
-
-      <!-- 데이터 백업/복원 -->
-      <div class="form-card">
-        <h3 style="margin-bottom: 15px;">💾 데이터 백업 및 복원 (JSON)</h3>
-        <p style="font-size:0.85rem; color:var(--text-sub); margin-bottom: 12px;">
-          작성한 전적 데이터를 JSON 파일로 다운로드하여 백업하거나, 다른 PC로 옮겨올 수 있습니다.
-        </p>
-        <button class="btn-primary" style="margin-right: 10px;" onclick="exportData()">데이터 내보내기 (Download)</button>
-        <input type="file" id="importFile" style="display:none;" onchange="importData(event)" />
-        <button class="btn-admin" style="display:inline-block; width:auto; padding:10px 16px;" onclick="document.getElementById('importFile').click()">데이터 가져오기 (Upload)</button>
-      </div>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortTable('name')">선수</th>
+            <th onclick="sortTable('tier')">내부 티어 ⬍</th>
+            <th onclick="sortTable('position')">주 포지션</th>
+            <th onclick="sortTable('games')">총 게임 ⬍</th>
+            <th onclick="sortTable('wins')">승리 ⬍</th>
+            <th onclick="sortTable('winRate')">승률 ⬍</th>
+            <th>체감 특징 및 코멘트</th>
+          </tr>
+        </thead>
+        <tbody id="leaderboardBody">
+          <tr><td colspan="7" class="status-msg">구글 스프레드시트 데이터를 불러오는 중...</td></tr>
+        </tbody>
+      </table>
     </div>
   </main>
 
   <script>
-    // 1. 초기 기본 데이터 샘플
-    const initialPlayers = [
-      { id: 1, name: "참가자 1", tier: "S", position: "MID", games: 4, wins: 3, notes: "메인 오더 가능 / 챔프폭 넓음" },
-      { id: 2, name: "참가자 2", tier: "B", position: "SUP", games: 4, wins: 1, notes: "로밍 선호 / 오프롤 원딜 케어 필요" },
-      { id: 3, name: "참가자 3", tier: "B", position: "TOP", games: 4, wins: 2, notes: "칼챔 위주 / 1대1 라인전 준수" },
-      { id: 5, name: "참가자 5", tier: "A", position: "JGL", games: 4, wins: 2, notes: "정글 동선 깔끔함" },
-      { id: 6, name: "참가자 6", tier: "A", position: "BOT", games: 4, wins: 3, notes: "원딜 본포지션 / 한타 딜링 우수" },
-      { id: 7, name: "참가자 7", tier: "A", position: "TOP", games: 4, wins: 3, notes: "솔랭 실버지만 라인전 체급은 에메 이상" },
-      { id: 10, name: "참가자 10", tier: "S", position: "JGL", games: 4, wins: 2, notes: "정글/원딜 능숙" }
-    ];
+    // ==========================================
+    // ★ 여기에 구글 시트 [웹에 게시] CSV 링크를 넣으세요!
+    // ==========================================
+    const GOOGLE_SHEET_CSV_URL = https://docs.google.com/spreadsheets/d/e/2PACX-1vTD-8LQeTnApUwtihtMMrW_FI9u0ZfXQukMA4oZpCtcAmA7vFncTA7S7NnNywgqmH6gV7cvyK5S8fFa/pub?output=csv;
 
-    let players = JSON.parse(localStorage.getItem("lol_players")) || initialPlayers;
-    let isAdmin = false;
+    let players = [];
     let sortColumn = 'tier';
     let sortAsc = false;
-
-    // 티어별 정렬 우선순위
     const tierWeights = { "SS": 6, "S": 5, "A": 4, "B": 3, "C": 2, "D": 1 };
 
-    function saveData() {
-      localStorage.setItem("lol_players", JSON.stringify(players));
-      renderLeaderboard();
-      renderMatchCheckboxes();
-    }
+    // 간단한 CSV 파서
+    function parseCSV(text) {
+      const lines = text.trim().split("\n");
+      if (lines.length < 2) return [];
 
-    // 화면 탭 전환
-    function switchTab(tabId, el) {
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelectorAll('.nav-links li').forEach(l => l.classList.remove('active'));
-      document.getElementById('tab-' + tabId).classList.add('active');
-      el.classList.add('active');
-      if(tabId === 'match') renderMatchCheckboxes();
-    }
-
-    // 관리자 로그인 토글
-    function toggleAdminModal() {
-      if (isAdmin) {
-        isAdmin = false;
-        alert("관리자 모드가 해제되었습니다.");
-        document.getElementById('adminBtn').innerText = "관리자 로그인";
-        document.getElementById('adminBadge').style.display = "none";
-      } else {
-        const pw = prompt("관리자 비밀번호를 입력하세요 (초기 비밀번호: admin123):");
-        if (pw === "admin123") {
-          isAdmin = true;
-          alert("관리자 인증 완료! 수정/삭제 권한이 활성화됩니다.");
-          document.getElementById('adminBtn').innerText = "관리자 로그아웃";
-          document.getElementById('adminBadge').style.display = "block";
-        } else if (pw !== null) {
-          alert("비밀번호가 올바르지 않습니다.");
+      const result = [];
+      for (let i = 1; i < lines.length; i++) {
+        // 쉼표 분리 (따옴표 처리)
+        const row = lines[i].split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/).map(v => v.replace(/^"\vert{}"$/g, '').trim());
+        if (row.length >= 5 && row[0]) {
+          const games = parseInt(row[3]) || 0;
+          const wins = parseInt(row[4]) || 0;
+          result.push({
+            name: row[0],
+            tier: row[1] || 'B',
+            position: row[2] || 'MID',
+            games: games,
+            wins: wins,
+            winRate: games > 0 ? (wins / games) : 0,
+            notes: row[5] || '-'
+          });
         }
       }
-      renderLeaderboard();
+      return result;
     }
 
-    // 리더보드 렌더링
+    // 구글 시트에서 실시간 데이터 받아오기
+    async function fetchSheetData() {
+      const tbody = document.getElementById("leaderboardBody");
+      tbody.innerHTML = `<tr><td colspan="7" class="status-msg">구글 시트에서 최신 전적을 받아오는 중입니다...</td></tr>`;
+
+      if (GOOGLE_SHEET_CSV_URL.includes("여기에_복사한")) {
+        tbody.innerHTML = `<tr><td colspan="7" class="status-msg" style="color:var(--loss-color);">
+          ⚠️ 코드 상단의 GOOGLE_SHEET_CSV_URL 변수에 구글 시트 CSV 링크를 먼저 입력해주세요!
+        </td></tr>`;
+        return;
+      }
+
+      try {
+        // 캐시 방지를 위해 타임스탬프 쿼리 추가
+        const response = await fetch(GOOGLE_SHEET_CSV_URL + "&t=" + new Date().getTime());
+        const csvText = await response.text();
+        players = parseCSV(csvText);
+        renderLeaderboard();
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="status-msg" style="color:var(--loss-color);">
+          데이터를 불러오지 못했습니다. 구글 시트가 '웹에 게시' 상태인지 확인해주세요.
+        </td></tr>`;
+      }
+    }
+
     function renderLeaderboard() {
       const tbody = document.getElementById("leaderboardBody");
       const search = document.getElementById("searchInput").value.toLowerCase();
@@ -380,7 +247,6 @@
 
       let filtered = players.filter(p => p.name.toLowerCase().includes(search));
 
-      // 정렬 처리
       filtered.sort((a, b) => {
         let valA = a[sortColumn];
         let valB = b[sortColumn];
@@ -388,9 +254,6 @@
         if (sortColumn === 'tier') {
           valA = tierWeights[a.tier] || 0;
           valB = tierWeights[b.tier] || 0;
-        } else if (sortColumn === 'winRate') {
-          valA = a.games ? (a.wins / a.games) : 0;
-          valB = b.games ? (b.wins / b.games) : 0;
         }
 
         if (valA < valB) return sortAsc ? -1 : 1;
@@ -398,9 +261,14 @@
         return 0;
       });
 
+      if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="status-msg">표시할 선수 데이터가 없습니다.</td></tr>`;
+        return;
+      }
+
       filtered.forEach(p => {
-        const winRate = p.games > 0 ? Math.round((p.wins / p.games) * 100) : 0;
-        const winRateClass = winRate >= 60 ? 'winrate-high' : winRate >= 45 ? 'winrate-mid' : 'winrate-low';
+        const winPercent = Math.round(p.winRate * 100);
+        const winRateClass = winPercent >= 60 ? 'winrate-high' : winPercent >= 45 ? 'winrate-mid' : 'winrate-low';
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
@@ -409,124 +277,21 @@
           <td>${p.position}</td>
           <td>${p.games}</td>
           <td>${p.wins}</td>
-          <td class="${winRateClass}">${winRate}%</td>
-          <td style="color:var(--text-sub);">${p.notes || "-"}</td>
-          ${isAdmin ? `<td><button onclick="deletePlayer(${p.id})" style="background:#ef4444; border:none; color:white; padding:4px 8px; border-radius:4px; cursor:pointer;">삭제</button></td>` : ''}
+          <td class="${winRateClass}">${winPercent}%</td>
+          <td style="color:var(--text-sub);">${p.notes}</td>
         `;
         tbody.appendChild(tr);
       });
-
-      document.querySelectorAll('.admin-only').forEach(el => {
-        el.style.display = isAdmin ? 'table-cell' : 'none';
-      });
     }
 
-    // 정렬 토글
     function sortTable(col) {
       if (sortColumn === col) sortAsc = !sortAsc;
       else { sortColumn = col; sortAsc = false; }
       renderLeaderboard();
     }
 
-    // 신규 선수 등록
-    function savePlayer() {
-      const name = document.getElementById("pName").value.trim();
-      if (!name) return alert("선수명을 입력해주세요!");
-
-      const existingIndex = players.findIndex(p => p.name === name);
-      const playerData = {
-        id: existingIndex >= 0 ? players[existingIndex].id : Date.now(),
-        name: name,
-        tier: document.getElementById("pTier").value,
-        position: document.getElementById("pPos").value,
-        games: existingIndex >= 0 ? players[existingIndex].games : 0,
-        wins: existingIndex >= 0 ? players[existingIndex].wins : 0,
-        notes: document.getElementById("pNotes").value.trim()
-      };
-
-      if (existingIndex >= 0) players[existingIndex] = playerData;
-      else players.push(playerData);
-
-      saveData();
-      alert(`${name} 선수 정보가 저장되었습니다.`);
-      document.getElementById("pName").value = "";
-      document.getElementById("pNotes").value = "";
-    }
-
-    // 선수 삭제
-    function deletePlayer(id) {
-      if (!confirm("해당 선수를 삭제하시겠습니까?")) return;
-      players = players.filter(p => p.id !== id);
-      saveData();
-    }
-
-    // 경기 결과 입력 체크박스 렌더링
-    function renderMatchCheckboxes() {
-      const winDiv = document.getElementById("winnerCheckboxes");
-      const lossDiv = document.getElementById("loserCheckboxes");
-      winDiv.innerHTML = "";
-      lossDiv.innerHTML = "";
-
-      players.forEach(p => {
-        winDiv.innerHTML += `<label><input type="checkbox" name="win_player" value="${p.id}"> ${p.name} (${p.position})</label>`;
-        lossDiv.innerHTML += `<label><input type="checkbox" name="loss_player" value="${p.id}"> ${p.name} (${p.position})</label>`;
-      });
-    }
-
-    // 경기 결과 자동 정산 반영
-    function submitMatchResult() {
-      const winChecked = Array.from(document.querySelectorAll('input[name="win_player"]:checked')).map(el => parseInt(el.value));
-      const lossChecked = Array.from(document.querySelectorAll('input[name="loss_player"]:checked')).map(el => parseInt(el.value));
-
-      if (winChecked.length === 0 || lossChecked.length === 0) {
-        return alert("승리 팀과 패배 팀 선수를 최소 1명 이상 선택하세요.");
-      }
-
-      // 승리 팀 반영
-      winChecked.forEach(id => {
-        const p = players.find(x => x.id === id);
-        if (p) { p.games += 1; p.wins += 1; }
-      });
-
-      // 패배 팀 반영
-      lossChecked.forEach(id => {
-        const p = players.find(x => x.id === id);
-        if (p) { p.games += 1; }
-      });
-
-      saveData();
-      alert("경기 결과가 정산되어 개인 기록에 반영되었습니다!");
-      switchTab('leaderboard', document.querySelector('.nav-links li:first-child'));
-    }
-
-    // JSON 내보내기/가져오기
-    function exportData() {
-      const blob = new Blob([JSON.stringify(players, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `lol_scrim_data_${new Date().toISOString().slice(0,10)}.json`;
-      a.click();
-    }
-
-    function importData(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          players = JSON.parse(e.target.result);
-          saveData();
-          alert("데이터를 성공적으로 복원했습니다!");
-        } catch(err) {
-          alert("올바르지 않은 JSON 파일입니다.");
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    // 초기 실행
-    renderLeaderboard();
+    // 페이지 접속 시 자동 로드
+    fetchSheetData();
   </script>
 </body>
 </html>
